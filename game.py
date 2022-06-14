@@ -12,7 +12,7 @@ pygame.display.set_caption('Sumo Battle!')
 
 # set pygame font
 FONT_SIZE = 72
-GAME_FONT = pygame.freetype.Font("asset/shanghai.ttf", FONT_SIZE)
+GAME_FONT = pygame.freetype.Font("assets/shanghai.ttf", FONT_SIZE)
 def getText(text):
     text_surface, textRect = GAME_FONT.render(text, (255, 255, 0))
     textHalfWidth = text_surface.get_width() / 2
@@ -24,11 +24,11 @@ def getText(text):
 pushPower = 5
 
 # load sumo
-sumo = pygame.image.load("asset/somo_battle.png")
+sumo = pygame.image.load("assets/somo_battle.png")
 
 # laod backgorund
 
-background = pygame.image.load("asset/background.jpg")
+background = pygame.image.load("assets/background.jpg")
 black_transparent = (0, 0, 0, 120)
 
 # set sumo position
