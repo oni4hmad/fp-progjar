@@ -51,6 +51,9 @@ class Server(threading.Thread):
             clt.start()
             self.the_clients.append(clt)
 
+            print('jumlah client:', len(self.the_clients))
+            print('client:', self.the_clients)
+
 
 def main():
     svr = Server(ipaddress='0.0.0.0', port=6666)

@@ -48,7 +48,6 @@ class PlayerServerInterface:
     def get_is_win(self, params=[]):
         pnum = params[0]
         is_win = self.is_p1_win if pnum == '1' else self.is_p2_win
-        print('is_win', is_win)
         try:
             return dict(status='OK', player=pnum, is_win=is_win)
         except Exception as e:
