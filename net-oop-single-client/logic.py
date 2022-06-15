@@ -39,6 +39,7 @@ class PlayerServerInterface:
                 self.players['position'] = f"{x},{y}"
                 print(self.players['position'])
                 if (x > self.inital_x + self.win_offset):
+                    self.is_started = False
                     self.is_p1_win = True
                     self.is_p2_win = False
             elif (player_id == self.incoming_players[1]):
@@ -46,6 +47,7 @@ class PlayerServerInterface:
                 self.players['position'] = f"{x},{y}"
                 print(self.players['position'])
                 if (x < self.inital_x - self.win_offset):
+                    self.is_started = False
                     self.is_p1_win = False
                     self.is_p2_win = True
             self.players.sync()
@@ -81,7 +83,6 @@ class PlayerServerInterface:
                 return dict(status='ERROR')
         else:
             try:
-
                 return dict(status='OK', is_success=False, msg="There's already 2 players")
             except Exception as ee:
                 return dict(status='ERROR')
@@ -92,12 +93,29 @@ class PlayerServerInterface:
         except Exception as ee:
             return dict(status='ERROR')
 
-    # def maintain_connection(self, params=[]):
-    #     player_id = params[0]
-
     def start_game(self):
+        # reset game state
+        self.is_p1_win = None
+        self.is_p2_win = None
+        self.players['position'] = f"{self.inital_x},{self.initial_y}"
+
+        # set started
         self.is_started = True
 
+    def disconnect(self, params=[]):
+        player_id = params[0]
+        if player_id in self.incoming_players:
+            self.incoming_players.remove(player_id)
+            self.is_p1_win = True
+            self.is_p2_win = True
+            self.is_started = False
+        try:
+            return dict(status='OK', is_disconnected=True)
+        except Exception as ee:
+            return dict(status='ERROR')
+
+    # def maintain_connection(self, params=[]):
+    #     player_id = params[0]
 
 if __name__ == '__main__':
     p = PlayerServerInterface()

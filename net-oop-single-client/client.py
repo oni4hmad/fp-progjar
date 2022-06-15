@@ -6,6 +6,7 @@ import sys
 import pygame
 import uuid
 
+
 class ClientInterface:
     def __init__(self, idplayer='1'):
         self.idplayer = idplayer
@@ -78,6 +79,15 @@ class ClientInterface:
         else:
             return False
 
+    def disconnect(self):
+        command_str = f"disconnect {self.idplayer}"
+        hasil = self.send_command(command_str)
+        if (hasil['status'] == 'OK'):
+            is_disconnected = hasil['is_disconnected']
+            return is_disconnected
+        else:
+            return False
+
 
 class Player:
     def __init__(self, pnum):
@@ -93,6 +103,9 @@ class Player:
         # craate client interface
         self.ci = ClientInterface(pnum)
 
+        # is winning
+        self.is_winning = None
+
     def send_push(self):
         self.ci.send_command(f'add_push {self.pnum}')
 
@@ -100,7 +113,8 @@ class Player:
         return self.ci.get_location()
 
     def get_win_state(self):
-        return self.ci.get_win_state()
+        self.is_winning = self.ci.get_win_state()
+        return self.is_winning
 
     def register_id(self):
         hasil = self.ci.register_id()
@@ -111,6 +125,9 @@ class Player:
 
     def get_is_started(self):
         return self.ci.get_is_started()
+
+    def disconnect(self):
+        return self.ci.disconnect()
 
     # def draw(self):
 
@@ -149,7 +166,7 @@ class Game:
         self.screenHalfHeight = height / 2
         self.screen = pygame.display.set_mode(SIZE)
 
-    def set_text(self, text="", color=(255, 255, 255), size=48, font="assets/shanghai.ttf"):
+    def set_text(self, text="", color=(255, 255, 255), size=48, y_offset=0, font="assets/shanghai.ttf"):
         # set pygame font
         FONT_SIZE = size
         GAME_FONT = pygame.freetype.Font(font, FONT_SIZE)
@@ -158,7 +175,7 @@ class Game:
         text_surface, textRect = GAME_FONT.render(text, color)
         textHalfWidth = text_surface.get_width() / 2
         textHalfHeight = text_surface.get_height() / 2
-        textPosition = (self.screenHalfWidth - textHalfWidth, self.screenHalfHeight - textHalfHeight)
+        textPosition = (self.screenHalfWidth - textHalfWidth, self.screenHalfHeight - textHalfHeight + y_offset)
         return [text_surface, textPosition]
 
     def set_fps(self, fps=30):
@@ -166,9 +183,10 @@ class Game:
 
     def show_waiting_for_connecton(self):
 
-        # get event (biar not responding)
+        # get event (biar ga not responding)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                player.disconnect()
                 sys.exit()
 
         # set wait bg
@@ -180,6 +198,34 @@ class Game:
 
         # render display
         pygame.display.update()
+
+    def show_play_again(self):
+
+        # get event (biar ga not responding)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    try_again = True
+                    return try_again
+
+        # set wait bg
+        # self.screen.blit(self.wait_bg, (0, 0))
+
+        # set waiting text
+        color = (255, 0, 0)
+        self.screen.blit(*self.set_text('Press enter to play again', color, y_offset=100, size=24))
+
+        # render display
+        pygame.display.update()
+
+        # wait try again
+        try_again = False
+        return try_again
+
+    def is_game_ended(self):
+        return player.is_winning is not None
 
     def render(self):
 
@@ -195,15 +241,13 @@ class Game:
                         self.player.send_push()
                         print("SPACE pressed")
 
-            if self.done:
-                # wait for another render
-                pygame.time.wait(self.timePerRender)
-
-                if quit:
+            if self.done or self.is_game_ended():
+                if self.quit:
+                    player.disconnect()
                     pygame.quit()
                     break
-
-                continue
+                elif self.done or self.is_game_ended():
+                    break
 
             # get current location
             curr_location = self.player.get_position()
@@ -229,27 +273,46 @@ class Game:
 
 
 if __name__ == "__main__":
-    # init player with player id
-    random_id = uuid.uuid1()
-    player = Player(str(random_id)[0:6])
-    print(random_id)
 
-    # register player id
-    is_success = player.register_id()
-    while not is_success:
-        pygame.time.wait(1500)
+    while True:
+
+        # init player with player id
+        random_id = uuid.uuid1()
+        player = Player(str(random_id)[0:6])
+        print(random_id)
+
+        # register player id
         is_success = player.register_id()
+        while not is_success:
+            pygame.time.wait(1500)
+            is_success = player.register_id()
 
-    # init game
-    game = Game(player)
-    game.set_screen_size()
+        # init game
+        game = Game(player)
+        game.set_screen_size()
 
-    # waiting for opponent
-    is_game_started = player.get_is_started()
-    while not is_game_started:
-        game.show_waiting_for_connecton()
-        pygame.time.wait(game.timePerRender)
+        # waiting for opponent
         is_game_started = player.get_is_started()
+        while not is_game_started:
+            game.show_waiting_for_connecton()
+            pygame.time.wait(game.timePerRender)
+            is_game_started = player.get_is_started()
 
-    # render gameplay
-    game.render()
+        # render gameplay
+        game.render()
+
+        # wait until game ended
+        is_game_started = player.get_is_started()
+        while is_game_started:
+            pygame.time.wait(500)
+
+        # if ended: disconnect, and give try again ui
+        is_disconnected = player.disconnect()
+        while not is_disconnected:
+            pygame.time.wait(500)
+            is_disconnected = player.disconnect()
+
+        while is_disconnected:
+            try_again = game.show_play_again()
+            pygame.time.wait(game.timePerRender)
+            if (try_again): break
