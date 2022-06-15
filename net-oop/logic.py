@@ -13,7 +13,7 @@ class PlayerServerInterface:
 
         # inital position
         self.inital_x, self.initial_y = 200, 100
-        self.win_offset = 200
+        self.win_offset = 170
         self.players['position'] = f"{self.inital_x},{self.initial_y}"
 
         # win state
