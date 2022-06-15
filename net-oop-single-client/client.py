@@ -98,7 +98,7 @@ class Player:
         self.player_type = None
 
         # load sumo
-        self.sumo = pygame.image.load("assets/sumo.png")
+        self.sumo = pygame.image.load("assets/sumo-baru.png")
 
         # craate client interface
         self.ci = ClientInterface(pnum)
@@ -133,7 +133,7 @@ class Player:
 
 
 class Game:
-    def __init__(self, player=Player('1'), title="Pendorong Handal - Player 1"):
+    def __init__(self, player=Player('1'), title="Pendorong Handal"):
         pygame.init()
 
         # set window title
@@ -156,6 +156,10 @@ class Game:
         self.background = pygame.image.load("assets/bg.jpg")
         black_transparent = (0, 0, 0, 120)
 
+        # load img
+        self.img_spacepush_keydown = pygame.image.load('assets/space_push_keydown.png')
+        self.img_spacepush_keyup = pygame.image.load('assets/space_push_keyup.png')
+
         # game state
         self.done = self.quit = False
 
@@ -177,6 +181,14 @@ class Game:
         textHalfHeight = text_surface.get_height() / 2
         textPosition = (self.screenHalfWidth - textHalfWidth, self.screenHalfHeight - textHalfHeight + y_offset)
         return [text_surface, textPosition]
+
+    def set_img(self, img, y_offset=0):
+
+        # set img position
+        imgHalfWidth = img.get_width() / 2
+        imgHalfHeight = img.get_height() / 2
+        imgRect = img.get_rect().move(self.screenHalfWidth - imgHalfWidth, self.screenHalfHeight - imgHalfHeight + y_offset)
+        return [img, imgRect]
 
     def set_fps(self, fps=30):
         return int(1000 / fps)
@@ -210,9 +222,6 @@ class Game:
                     try_again = True
                     return try_again
 
-        # set wait bg
-        # self.screen.blit(self.wait_bg, (0, 0))
-
         # set waiting text
         color = (255, 0, 0)
         self.screen.blit(*self.set_text('Press enter to play again', color, y_offset=100, size=24))
@@ -228,6 +237,8 @@ class Game:
         return player.is_winning is not None
 
     def render(self):
+
+        spacepush_img_pressed = False
 
         while True:
 
@@ -257,6 +268,16 @@ class Game:
             # draw background, player
             self.screen.blit(self.background, (0, 0))
             self.screen.blit(self.player.sumo, (x, y))
+
+            # draw P1/P2
+            color = (255, 255, 0)
+            p_type = str(self.player.player_type).upper()
+            self.screen.blit(*self.set_text(f"You're {p_type}", color=color, size=32, y_offset=-210))
+
+            # draw spacepush img
+            spacepush_img_pressed = not spacepush_img_pressed
+            if spacepush_img_pressed: self.screen.blit(*self.set_img(self.img_spacepush_keydown, 200))
+            else: self.screen.blit(*self.set_img(self.img_spacepush_keyup, 200))
 
             # draw text win/lose
             win_state = self.player.get_win_state()

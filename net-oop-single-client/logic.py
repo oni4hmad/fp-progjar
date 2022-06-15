@@ -14,7 +14,7 @@ class PlayerServerInterface:
         self.players = shelve.open('g.db', writeback=True)
 
         # inital position
-        self.inital_x, self.initial_y = 200, 100
+        self.inital_x, self.initial_y = 200, 60
         self.win_offset = 170
         self.players['position'] = f"{self.inital_x},{self.initial_y}"
 
