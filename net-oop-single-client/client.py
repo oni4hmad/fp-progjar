@@ -11,6 +11,7 @@ class ClientInterface:
     def __init__(self, idplayer='1'):
         self.idplayer = idplayer
         self.server_address = ('192.168.1.4', 6666)
+        # self.server_address = ('127.0.0.1',6666)
 
     def send_command(self, command_str=""):
         global server_address
@@ -156,6 +157,11 @@ class Game:
         self.background = pygame.image.load("assets/bg.jpg")
         black_transparent = (0, 0, 0, 120)
 
+        # soundeffect
+        self.win_sound = pygame.mixer.Sound("assets/win_sound.mp3")
+        self.lose_sound = pygame.mixer.Sound("assets/lose_sound.mp3")
+        # self.start_sound = pygame.mixer.Sound("assets/finishhim.mp3")
+
         # load img
         self.img_spacepush_keydown = pygame.image.load('assets/space_push_keydown.png')
         self.img_spacepush_keyup = pygame.image.load('assets/space_push_keyup.png')
@@ -269,6 +275,7 @@ class Game:
             self.screen.blit(self.background, (0, 0))
             self.screen.blit(self.player.sumo, (x, y))
 
+
             # draw P1/P2
             color = (255, 255, 0)
             p_type = str(self.player.player_type).upper()
@@ -283,8 +290,10 @@ class Game:
             win_state = self.player.get_win_state()
             if win_state:
                 self.screen.blit(*self.set_text('You Win!'))
+                self.win_sound.play()
             elif win_state is not None:
                 self.screen.blit(*self.set_text('You Lose!'))
+                self.lose_sound.play()
 
             # render display
             pygame.display.update()
