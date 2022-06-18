@@ -2,6 +2,12 @@
 Final Project: Pemrograman Jaringan kelas D - Kelompok 2
 ![awal_github](https://user-images.githubusercontent.com/62281277/174250732-690bedd4-10af-4c40-9a6c-9b4bd0806b4f.jpg)
 
+## ☑ Requirement
+Pastikan sudah menginstall pygame
+```python
+pip install pygame
+```
+
 ## 🕹 Untuk bermain
 ![preview_pendorong_handal](https://user-images.githubusercontent.com/62281277/174254486-56e1e699-5e43-4a5a-8e11-b76b451970c8.gif)
 
